@@ -1,6 +1,13 @@
-#include <stdio.h>
-#include <sys/types.h>
 #include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
+
+#define PREFIX "movies_"
 
 struct movie {
 	char* title;
@@ -113,6 +120,7 @@ main(int argc, char *argv[]){
 
 
 
+	closedir(currDir);
 
 
 
@@ -122,23 +130,32 @@ main(int argc, char *argv[]){
 
 
 
-);
+}
 /****
 Uses parts of the directories exploration.
 
 ****/ 
-void get_smallest(struct dirent *aDir){
-	Dir *opendir(".");
-	while(readdir(opendir) != NULL){
-		if(opendir
-		
-		
-		
+struct dirent * get_smallest(struct dirent *aDir, DIR * Opened){
+	struct stat dirStat;
+	struct dirent * dir;
+	struct dirent * min;
+	char buffer[256];
+	int smallest = 10000000000;
+	char * extension = ".csv";
+	char * pch = NULL;
+	while(dir = readdir(Opened) != NULL){
+	pch = strstr(dir->d_name, extension);
+
+	if(pch != NULL){
+		stat(dir->d_name, &dirStat);
+		if((dirStat.st_size < smallest) && strncmp(PREFIX, dir->d_name, strlen(PREFIX))){
+		min = dir;
+		smallest = dirStat.st_size; 
+		}
 		
 	}
 	
-	
-	
+	}
 	
 }
 
@@ -174,7 +191,7 @@ int getInput(struct movie * head, int size){
 
 	scanf("%d", &n);
 	error = 0;
-	if(!((n == 1) || (n == 2) || (n == 3)){
+	if(!((n == 1) || (n == 2) || (n == 3))){
 		error = 1;
 		printf("Sorry need an integer 1-3! \n");
 
