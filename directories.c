@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
+
 
 #define PREFIX "movies_"
 
@@ -22,8 +24,9 @@ struct movie {
 struct movie * head = NULL;
 
 
-struct movie * getMovies(char *argv[]){
-	FILE *number = fopen(argv[1], "r");
+struct movie * getMovies(char * file, int * size){
+	
+	FILE *number = fopen(file, "r");
 	char * nread;
 	size_t len = 0;
 	struct movie * beginning;
@@ -41,10 +44,11 @@ struct movie * getMovies(char *argv[]){
 	pn = &nread;
 	struct movie Movie;
 		struct movie * ptr;
+	
 		getline(&nread, &len, number);
 
 		while(getline(&nread, &len, number) != -1){
-		
+		size++;
 		struct movie *ptr = (struct movie *) malloc(sizeof(struct movie));
 
 	//lseek(fp, 1, SEEK_SET);
@@ -111,19 +115,29 @@ struct movie * getMovies(char *argv[]){
 
 main(int argc, char *argv[]){ 
 	const char* pathname;
+	char * file;
+
 	
 	DIR* currDir = opendir(".");
+	/*
 	struct dirent *aDir;
+*/
+	int size;
+	struct movie * first;
+
+	get_smallest(currDir, file);
+	/*
+	int * array = (int *) malloc(size * sizeof(int));
+	head = getMovies(file, &size);
 
 
-
+	get_num_years(head, size, array);
 
 
 
 	closedir(currDir);
 
-
-
+*/
 
 
 
@@ -135,14 +149,16 @@ main(int argc, char *argv[]){
 Uses parts of the directories exploration.
 
 ****/ 
-struct dirent * get_smallest(struct dirent *aDir, DIR * Opened){
+void get_smallest(DIR * Opened, char * file){
 	struct stat dirStat;
 	struct dirent * dir;
 	struct dirent * min;
+	min = dir;
 	char buffer[256];
-	int smallest = 10000000000;
+	int smallest = 1000000;
 	char * extension = ".csv";
 	char * pch = NULL;
+	
 	while(dir = readdir(Opened) != NULL){
 	pch = strstr(dir->d_name, extension);
 
@@ -156,20 +172,87 @@ struct dirent * get_smallest(struct dirent *aDir, DIR * Opened){
 	}
 	
 	}
+	file = min->d_name;
+	
 	
 }
 
-void mk_directories(){
-	int mkdir(const char * pathname, mode_t mode);
-
-
-
-
-
-
-
-
+int get_num_years(int y, struct movie * head, int size, int * array){
+		
+               
+	struct movie * first; 
+	
+	int curr_year = 0;
+	
+	double max_rating = 0.0;
+	struct movie * temp = NULL;
+	
+	int max_year = 0;
+	char * title = NULL;
+	//struct movie * head_ratings;
+	first = head;
+	int s = size;
+	
+	
+	for(int i = 0; i < size; i++){
+				array[i] = 0;
+				
+			}
+	int year_marked = 0;
+	int count = 0;
+	first = head;
+	while(head != NULL){
+	
+	//temp = head;
+		curr_year = head->year;
+	for(int i = 0; i < size; i++){
+				if(array[i] == curr_year){
+					year_marked = 1;
+				}
+				
+			}
+		
+		if(year_marked == 0){
+			array[count] = curr_year;
+			count++;
+	
+		}
+		year_marked = 0;			
+		//head = temp;
+		
+			head = head->next; 
+		
+	
+		
+	}
+	head = first;
+	printf("the count is: %d", count);
+	return count;
+	//*/
 }
+
+void mk_directories(struct movie * head, int num_years, int size){
+	int fd;
+	int curr_year;
+	int count;
+	int year_marked;
+		int s = size;
+
+	char * newFile;
+	const char * pathname = "hajl_movies";
+
+	mkdir(pathname, 0750);
+
+	
+	fd = open(newFile, O_RDWR | O_CREAT);
+			
+
+
+
+	}
+
+
+
 
 
 
@@ -211,16 +294,11 @@ int getInput(struct movie * head, int size){
 
 		
 	}
-	else if(n == 3){
-	
-
-		
-	}
 	else{
 	
 		
 		
 		
 	}
-	}while(n != 4);
+	}while(n != 2);
 }
