@@ -24,9 +24,13 @@ struct movie {
 struct movie * head = NULL;
 
 
-struct movie * getMovies(char * file, int * size){
+struct movie * getMovies(char * file, int * size, int * err){
 	
 	FILE *number = fopen(file, "r");
+	if(number == NULL){
+		*err = 1;
+		
+	}
 	char * nread;
 	size_t len = 0;
 	struct movie * beginning;
@@ -49,22 +53,22 @@ struct movie * getMovies(char * file, int * size){
 		getline(&nread, &len, number);
 
 		while(getline(&nread, &len, number) != -1){
-		size++;
+		*size = *size + 1;
 		struct movie *ptr = (struct movie *) malloc(sizeof(struct movie));
 
 	//lseek(fp, 1, SEEK_SET);
 	
 	int i = 1;
-				printf("The pointer is: %d \n", *ptr);
+			//	printf("The pointer is: %d \n", *ptr);
 
-		printf("%s", nread);
+		//printf("%s", nread);
 		token = strtok(nread, ",");
 		ptr->title = malloc(strlen(token) + 1);
 		strcpy(ptr->title, token);
-		printf("The title is: %s \n", ptr->title);
+		//printf("The title is: %s \n", ptr->title);
 		token = strtok(NULL, ",");
 		ptr->year = atoi(token);
-		printf("The year is: %d \n", ptr->year); 
+		//printf("The year is: %d \n", ptr->year); 
 		array = (char **) malloc(5 * sizeof(char *));
 		y=0;
 
@@ -81,7 +85,7 @@ struct movie * getMovies(char * file, int * size){
 		array[y] = malloc(strlen(token) +1);
 		strcpy(array[y], token);
 	
-		printf("The language(s): %s \n", array[y]);
+		//printf("The language(s): %s \n", array[y]);
 
 		y++;
 		
@@ -97,7 +101,7 @@ struct movie * getMovies(char * file, int * size){
 	
 		ptr->next = head;
 		head = ptr;
-		printf("The title is 100: %s \n",  head->title);
+		//printf("The title is 100: %s \n",  head->title);
 
 		
 		
@@ -133,17 +137,19 @@ main(int argc, char *argv[]){
 	struct dirent *aDir;
 */
 	int size;
+	int num_years;
 	struct movie * first;
-
-	get_smallest(currDir, &file);
+	//get_smallest(currDir, &file);
 	printf("what is the file: %s", file);
 	head = getMovies(file, &size);
+	
+	printf("What is size in MAIN: %d \n", size);
 
 	int * array = (int *) malloc(size * sizeof(int));
 	
 
 
-	get_num_years(head, size, array);
+	num_years = get_num_years(head, size, array);
 
 
 
@@ -200,33 +206,85 @@ void get_smallest(DIR * Opened, char ** file){
 	
 }
 
-int get_num_years(int y, struct movie * head, int size, int * array){
+void get_largest(DIR * Opened, char ** file){
+	// char * file = NULL;
+	struct stat dirStat;
+	struct dirent * dir = readdir(Opened);
+	struct dirent * min;
+	min = dir;
+	char buffer[256];
+	int largest = -1;
+	char * extension = ".csv";
+	char * pch = NULL;
+	char * directory_name = NULL;
+	while(dir != NULL){
+		
+		
+		directory_name = &(dir->d_name);
+	
+	pch = strstr(directory_name, extension);
+	if(pch != NULL){
+
+	
+		stat(dir->d_name, &dirStat);
+		if((dirStat.st_size > largest) && strncmp(PREFIX, dir->d_name, strlen(PREFIX)) == 0){
+		min = malloc(sizeof(dir->d_name));
+		min = dir->d_name;
+		largest = dirStat.st_size; 
+		}
+		
+	}
+	dir = readdir(Opened);
+	printf("what is the file_name %s \n", min);
+	
+	}
+	*file = malloc(strlen(min)+1);
+	strcpy(*file, min);
+	
+	
+	
+}
+char * get_input_file(){
+	// char * file = NULL;
+	char * file;
+	printf("what is the name of the file? \n");
+	scanf("%s", &file);
+	return file;
+	
+	
+	
+}
+
+int get_num_years(struct movie * head, int size, int * array){
 		
                
 	struct movie * first; 
 	
-	int curr_year = 0;
+	int curr_year;
 	
-	double max_rating = 0.0;
 	struct movie * temp = NULL;
 	
-	int max_year = 0;
 	char * title = NULL;
 	//struct movie * head_ratings;
 	first = head;
 	int s = size;
-	
+	printf("the size is: %d", size);
 	
 	/* for(int i = 0; i < size; i++){
 				array[i] = 0;
 				
 			} */
 	int year_marked = 0;
-	int count = 0;
+	int count = 1;
 	first = head;
-	 while(head != NULL){
-	
+	printf("What is head: %p", head);
+	for(int i = 0; i < size; i++){
+				array[i] = 0;
+				
+			}
+	while(head != NULL){
 	//temp = head;
+	
 		curr_year = head->year;
 	for(int i = 0; i < size; i++){
 				if(array[i] == curr_year){
@@ -234,16 +292,19 @@ int get_num_years(int y, struct movie * head, int size, int * array){
 				}
 				
 			}
+	
 		
 		if(year_marked == 0){
 			array[count] = curr_year;
 			count++;
 	
-		}			
+		}
+		else{
+			year_marked = 0;
+		}
 		//head = temp;
 		
 			head = head->next; 
-		year_marked = 0;
 	
 		
 	} 
@@ -279,48 +340,52 @@ void mk_directories(struct movie * head, int num_years, int size){
 
 
 
-int getInput(struct movie * head, int size){
+int getInput(DIR* currDir, struct movie * head){
 	int n;
 	int error = 0;
+	int file_err = 0;
+	char * file = NULL;
+	int size;
+	int first_menu = 0;
 	do{
+	printf("1. Select file to process \n");
+	printf("2. Exit the program \n");
+	printf("Enter a choice 1 or 2: \n");
+	scanf("%d", &first_menu);
+	
 	do{
+	file_err = 0;
+	error = 0;
 	printf("Which file you want to process? \n");
 	printf("Enter 1 to pick the largest file \n");
 	printf("Enter 2 to pick the smallest file \n");
 	printf("Enter 3 to specify the name of a file \n");
 	printf("Enter a choice from 1 to 3: \n");
-
-
-
-
-
 	scanf("%d", &n);
-	error = 0;
-	if(!((n == 1) || (n == 2) || (n == 3))){
-		error = 1;
-		printf("Sorry need an integer 1-3! \n");
-
-	}
-	//printf("%d", n);
-	}while(error == 1);
-	
-
 	if(n == 1){
-
-		
-		
+	get_largest(currDir, &file);
+	head = getMovies(file, &size, &file_err);
 		
 	} 
 			
 	else if(n == 2){
+	get_smallest(currDir, &file);
+	head = getMovies(file, &size, &file_err);
+
+		
+	}
+	else if(n == 3){
+	file = get_input_file();
+	head = getMovies(file, &size, &file_err);
 
 		
 	}
 	else{
-	
-		
-		
-		
+		printf("incorrect input");
+		error = 1;
 	}
-	}while(n != 2);
+	}while(file_err == 1 || error == 1);
+		
+	
+	}while(first_menu == 1);
 }
