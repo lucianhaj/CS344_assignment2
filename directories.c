@@ -43,6 +43,7 @@ struct movie * getMovies(char * file, int * size){
 	char ** pn;
 	pn = &nread;
 	struct movie Movie;
+	int greater_than = 0;
 		struct movie * ptr;
 	
 		getline(&nread, &len, number);
@@ -70,10 +71,13 @@ struct movie * getMovies(char * file, int * size){
 		while(token != NULL){
 		//ptr->languages[y] = &token;
 		token = strtok(NULL, "[ ; ]");
+		//if(greater_than == 1){
 		if(token[0] == ','){
 			token++;
 			break;
 		}
+		//}
+		greater_than = 1;
 		array[y] = malloc(strlen(token) +1);
 		strcpy(array[y], token);
 	
@@ -119,16 +123,24 @@ main(int argc, char *argv[]){
 
 	
 	DIR* currDir = opendir(".");
+	if(currDir == NULL){
+		printf("error opening directory");
+		
+	}
+
+
 	/*
 	struct dirent *aDir;
 */
 	int size;
 	struct movie * first;
 
-	get_smallest(currDir, file);
-	/*
-	int * array = (int *) malloc(size * sizeof(int));
+	get_smallest(currDir, &file);
+	printf("what is the file: %s", file);
 	head = getMovies(file, &size);
+
+	int * array = (int *) malloc(size * sizeof(int));
+	
 
 
 	get_num_years(head, size, array);
@@ -137,7 +149,7 @@ main(int argc, char *argv[]){
 
 	closedir(currDir);
 
-*/
+
 
 
 
@@ -149,30 +161,41 @@ main(int argc, char *argv[]){
 Uses parts of the directories exploration.
 
 ****/ 
-void get_smallest(DIR * Opened, char * file){
+void get_smallest(DIR * Opened, char ** file){
+	// char * file = NULL;
 	struct stat dirStat;
-	struct dirent * dir;
+	struct dirent * dir = readdir(Opened);
 	struct dirent * min;
 	min = dir;
 	char buffer[256];
 	int smallest = 1000000;
 	char * extension = ".csv";
 	char * pch = NULL;
+	char * directory_name = NULL;
+	while(dir != NULL){
+		
+		
+		directory_name = &(dir->d_name);
 	
-	while(dir = readdir(Opened) != NULL){
-	pch = strstr(dir->d_name, extension);
-
+	pch = strstr(directory_name, extension);
 	if(pch != NULL){
+
+	
 		stat(dir->d_name, &dirStat);
-		if((dirStat.st_size < smallest) && strncmp(PREFIX, dir->d_name, strlen(PREFIX))){
-		min = dir;
+		if((dirStat.st_size < smallest) && strncmp(PREFIX, dir->d_name, strlen(PREFIX)) == 0){
+		min = malloc(sizeof(dir->d_name));
+		min = dir->d_name;
 		smallest = dirStat.st_size; 
 		}
 		
 	}
+	dir = readdir(Opened);
+	printf("what is the file_name %s \n", min);
 	
 	}
-	file = min->d_name;
+	*file = malloc(strlen(min)+1);
+	strcpy(*file, min);
+	
 	
 	
 }
@@ -194,14 +217,14 @@ int get_num_years(int y, struct movie * head, int size, int * array){
 	int s = size;
 	
 	
-	for(int i = 0; i < size; i++){
+	/* for(int i = 0; i < size; i++){
 				array[i] = 0;
 				
-			}
+			} */
 	int year_marked = 0;
 	int count = 0;
 	first = head;
-	while(head != NULL){
+	 while(head != NULL){
 	
 	//temp = head;
 		curr_year = head->year;
@@ -216,15 +239,14 @@ int get_num_years(int y, struct movie * head, int size, int * array){
 			array[count] = curr_year;
 			count++;
 	
-		}
-		year_marked = 0;			
+		}			
 		//head = temp;
 		
 			head = head->next; 
-		
+		year_marked = 0;
 	
 		
-	}
+	} 
 	head = first;
 	printf("the count is: %d", count);
 	return count;
