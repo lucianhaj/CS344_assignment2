@@ -7,6 +7,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
+#include <math.h>  
 
 
 #define PREFIX "movies_"
@@ -61,7 +63,7 @@ struct movie * getMovies(char * file, int * size, int * err){
 	int i = 1;
 			//	printf("The pointer is: %d \n", *ptr);
 
-		//printf("%s", nread);
+		printf("%s", nread);
 		token = strtok(nread, ",");
 		ptr->title = malloc(strlen(token) + 1);
 		strcpy(ptr->title, token);
@@ -124,36 +126,28 @@ struct movie * getMovies(char * file, int * size, int * err){
 main(int argc, char *argv[]){ 
 	const char* pathname;
 	char * file;
-
+	char * f;
 	
-	DIR* currDir = opendir(".");
-	if(currDir == NULL){
-		printf("error opening directory");
-		
-	}
+	
 
 
 	/*
 	struct dirent *aDir;
 */
 	int size;
-	int num_years;
 	struct movie * first;
 	//get_smallest(currDir, &file);
 	printf("what is the file: %s", file);
-	head = getMovies(file, &size);
+	//head = getMovies(file, &size);
 	
 	printf("What is size in MAIN: %d \n", size);
 
-	int * array = (int *) malloc(size * sizeof(int));
+	
+	getInput();
+
+	//num_years = get_num_years(head, size, array);
 	
 
-
-	num_years = get_num_years(head, size, array);
-
-
-
-	closedir(currDir);
 
 
 
@@ -167,10 +161,15 @@ main(int argc, char *argv[]){
 Uses parts of the directories exploration.
 
 ****/ 
-void get_smallest(DIR * Opened, char ** file){
+void get_smallest(char ** file){
+	DIR* currDir = opendir(".");
+	if(currDir == NULL){
+		printf("error opening directory");
+		
+	}
 	// char * file = NULL;
 	struct stat dirStat;
-	struct dirent * dir = readdir(Opened);
+	struct dirent * dir = readdir(currDir);
 	struct dirent * min;
 	min = dir;
 	char buffer[256];
@@ -195,21 +194,26 @@ void get_smallest(DIR * Opened, char ** file){
 		}
 		
 	}
-	dir = readdir(Opened);
+	dir = readdir(currDir);
 	printf("what is the file_name %s \n", min);
 	
 	}
 	*file = malloc(strlen(min)+1);
 	strcpy(*file, min);
-	
+	closedir(currDir);
 	
 	
 }
 
-void get_largest(DIR * Opened, char ** file){
+void get_largest(char ** file){
+	DIR* currDir = opendir(".");
+	if(currDir == NULL){
+		printf("error opening directory");
+		
+	}
 	// char * file = NULL;
 	struct stat dirStat;
-	struct dirent * dir = readdir(Opened);
+	struct dirent * dir = readdir(currDir);
 	struct dirent * min;
 	min = dir;
 	char buffer[256];
@@ -234,30 +238,22 @@ void get_largest(DIR * Opened, char ** file){
 		}
 		
 	}
-	dir = readdir(Opened);
+	dir = readdir(currDir);
 	printf("what is the file_name %s \n", min);
 	
 	}
 	*file = malloc(strlen(min)+1);
 	strcpy(*file, min);
-	
-	
-	
-}
-char * get_input_file(){
-	// char * file = NULL;
-	char * file;
-	printf("what is the name of the file? \n");
-	scanf("%s", &file);
-	return file;
-	
+	closedir(currDir);
 	
 	
 }
 
-int get_num_years(struct movie * head, int size, int * array){
+
+int * get_num_years(struct movie * head, int size){
 		
-               
+    int * array = (int *) malloc(size * sizeof(int));
+
 	struct movie * first; 
 	
 	int curr_year;
@@ -275,14 +271,15 @@ int get_num_years(struct movie * head, int size, int * array){
 				
 			} */
 	int year_marked = 0;
-	int count = 1;
+	int count = 0;
 	first = head;
-	printf("What is head: %p", head);
-	for(int i = 0; i < size; i++){
+	printf("What is head: %p \n", head);
+ 	for(int i = 0; i < size; i++){
 				array[i] = 0;
 				
 			}
-	while(head != NULL){
+	for(int x = 0; x < size; x++){
+	
 	//temp = head;
 	
 		curr_year = head->year;
@@ -309,49 +306,61 @@ int get_num_years(struct movie * head, int size, int * array){
 		
 	} 
 	head = first;
-	printf("the count is: %d", count);
+	printf("the count is: %d \n", count); 
 	return count;
 	//*/
+	
 }
 
-void mk_directories(struct movie * head, int num_years, int size){
+
+void mk_directory(int num_years){
 	int fd;
 	int curr_year;
 	int count;
 	int year_marked;
-		int s = size;
-
-	char * newFile;
-	const char * pathname = "hajl_movies";
-
+	srand(time(NULL));
+	char * random = rand() % 10000;
+	printf("random %s", random);
+	char * r;
+	//r = itoa(random, r, 10); 
+	/* const char * name = "hajl_movies.movies";
+	char * pathname;
+	char * int_to_char = (char)random;
+	
+	pathname = strcat(name, int_to_char);
 	mkdir(pathname, 0750);
 
-	
-	fd = open(newFile, O_RDWR | O_CREAT);
+	for(int i = 0; i< num_years; i++){
+		
+	//fd = open(pathname, O_RDWR | O_CREAT);
 			
 
+	
+
+	} */
+	
+}
 
 
-	}
 
 
 
 
-
-
-
-int getInput(DIR* currDir, struct movie * head){
+int getInput(){
 	int n;
+	int n_yrs;
 	int error = 0;
 	int file_err = 0;
 	char * file = NULL;
 	int size;
+	char * f;
 	int first_menu = 0;
 	do{
 	printf("1. Select file to process \n");
 	printf("2. Exit the program \n");
 	printf("Enter a choice 1 or 2: \n");
 	scanf("%d", &first_menu);
+	if(first_menu == 1){
 	
 	do{
 	file_err = 0;
@@ -362,29 +371,43 @@ int getInput(DIR* currDir, struct movie * head){
 	printf("Enter 3 to specify the name of a file \n");
 	printf("Enter a choice from 1 to 3: \n");
 	scanf("%d", &n);
+	
 	if(n == 1){
-	get_largest(currDir, &file);
+	get_largest(&file);
 	head = getMovies(file, &size, &file_err);
-		
-	} 
-			
+	free(file);
+	n_yrs = get_num_years(head, size);
+	//mk_directory(n_yrs);
+
+	//head = NULL;
+	}
 	else if(n == 2){
-	get_smallest(currDir, &file);
+	get_smallest(&file);
 	head = getMovies(file, &size, &file_err);
+	free(file);
+	//n_yrs = get_num_years(head, size);
+	//mk_directory(n_yrs);
 
 		
 	}
 	else if(n == 3){
-	file = get_input_file();
-	head = getMovies(file, &size, &file_err);
-
-		
-	}
+	 printf("what is the name of the file? \n");
+	scanf("%s", &file);
+ 
+	head = getMovies(&file, &size, &file_err);
+	//n_yrs = get_num_years(head, size);
+	//mk_directory(n_yrs);
+	} 
 	else{
 		printf("incorrect input");
 		error = 1;
 	}
 	}while(file_err == 1 || error == 1);
+	}
+	else{
+		exit(1);
+		
+	}
 		
 	
 	}while(first_menu == 1);
