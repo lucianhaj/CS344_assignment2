@@ -10,7 +10,6 @@
 #include <time.h>
 #include <math.h>  
 
-
 #define PREFIX "movies_"
 
 struct movie {
@@ -26,13 +25,10 @@ struct movie {
 struct movie * head = NULL;
 
 
+
 struct movie * getMovies(char * file, int * size, int * err){
 	
 	FILE *number = fopen(file, "r");
-	if(number == NULL){
-		*err = 1;
-		
-	}
 	char * nread;
 	size_t len = 0;
 	struct movie * beginning;
@@ -41,7 +37,6 @@ struct movie * getMovies(char * file, int * size, int * err){
 	char * token;
 	char * token2;
 	//	struct movie * b;
-
 	//n = getInput();
 	struct movie * first;
 	char * t;
@@ -53,16 +48,15 @@ struct movie * getMovies(char * file, int * size, int * err){
 		struct movie * ptr;
 	
 		getline(&nread, &len, number);
-
 		while(getline(&nread, &len, number) != -1){
 		*size = *size + 1;
 		struct movie *ptr = (struct movie *) malloc(sizeof(struct movie));
-
 	//lseek(fp, 1, SEEK_SET);
 	
 	int i = 1;
 			//	printf("The pointer is: %d \n", *ptr);
 
+		//printf("%s", nread);
 		printf("%s", nread);
 		token = strtok(nread, ",");
 		ptr->title = malloc(strlen(token) + 1);
@@ -73,7 +67,6 @@ struct movie * getMovies(char * file, int * size, int * err){
 		//printf("The year is: %d \n", ptr->year); 
 		array = (char **) malloc(5 * sizeof(char *));
 		y=0;
-
 		while(token != NULL){
 		//ptr->languages[y] = &token;
 		token = strtok(NULL, "[ ; ]");
@@ -88,15 +81,12 @@ struct movie * getMovies(char * file, int * size, int * err){
 		strcpy(array[y], token);
 	
 		//printf("The language(s): %s \n", array[y]);
-
 		y++;
 		
 		}
-
 		//getline(&nread, &len, fp);
 		//token = strtok(nread, ",");
 		//token = strtok(NULL,",");
-
 	    ptr->rating = atof(token);
 		ptr->languages = array;
 		y= 0;
@@ -104,18 +94,14 @@ struct movie * getMovies(char * file, int * size, int * err){
 		ptr->next = head;
 		head = ptr;
 		//printf("The title is 100: %s \n",  head->title);
-
 		
 		
 		
 	}
 	return head;
 		// add languages
-
 //	free(nread);
 	//*/
-
-
 }
 
 
@@ -250,7 +236,7 @@ void get_largest(char ** file){
 }
 
 
-int * get_num_years(struct movie * head, int size){
+int * get_num_years(struct movie * head, int size, int * c){
 		
     int * array = (int *) malloc(size * sizeof(int));
 
@@ -261,19 +247,14 @@ int * get_num_years(struct movie * head, int size){
 	struct movie * temp = NULL;
 	
 	char * title = NULL;
-	//struct movie * head_ratings;
 	first = head;
 	int s = size;
 	printf("the size is: %d", size);
 	
-	/* for(int i = 0; i < size; i++){
-				array[i] = 0;
-				
-			} */
+	
 	int year_marked = 0;
 	int count = 0;
 	first = head;
-	printf("What is head: %p \n", head);
  	for(int i = 0; i < size; i++){
 				array[i] = 0;
 				
@@ -306,39 +287,61 @@ int * get_num_years(struct movie * head, int size){
 		
 	} 
 	head = first;
-	printf("the count is: %d \n", count); 
-	return count;
-	//*/
+	*c = count;
+	return array;
 	
 }
 
 
-void mk_directory(int num_years){
+void mk_directory(int num_years, int * array){
 	int fd;
 	int curr_year;
 	int count;
 	int year_marked;
+	struct movie * first;
 	srand(time(NULL));
-	char * random = rand() % 10000;
-	printf("random %s", random);
+	int random = rand() % 10000;
+	printf("random %d \n", random);
 	char * r;
+	char file_x[5] = ".txt";
+	char * file_s;
+	char * year;
+	//char * r = (char *) malloc(sizeof(char) * (sizeof(random)/ sizeof(int)));
 	//r = itoa(random, r, 10); 
-	/* const char * name = "hajl_movies.movies";
+	const char dir_name[19]= "hajl_movies.movies.";
 	char * pathname;
-	char * int_to_char = (char)random;
+	//char * int_to_char = (char)random;
 	
-	pathname = strcat(name, int_to_char);
+	//pathname = strcat(name, r);
+	//printf("pathname is %s", pathname);
+	sprintf(&r, "%d", random);
+	pathname = strcat(dir_name, &r);
 	mkdir(pathname, 0750);
-
-	for(int i = 0; i< num_years; i++){
-		
-	//fd = open(pathname, O_RDWR | O_CREAT);
+	int cdir = chdir(pathname);
+	for(int i = 0; i < num_years; i++){
+	sprintf(&file_s, "%d", array[i]);
+	printf("string %s:", &file_s);
+	year = strcat(&file_s, ".txt");
+	printf("file_s %s", &file_s);
+	fd = open(year, O_RDWR | O_CREAT, 0640);
+	if(fd < 0){
+		printf("error");
+	}
+		first = head;
+		while(head != NULL){
+			if(head->year == array[i]){
+			int written = write(fd, head->title, strlen(head->title));
 			
+			}
+			head = head->next;
+			
+			
+	}
+	close(fd);
+		head = first;
+	}
+	chdir("..");
 
-	
-
-	} */
-	
 }
 
 
@@ -348,22 +351,25 @@ void mk_directory(int num_years){
 
 int getInput(){
 	int n;
-	int n_yrs;
+	int n_yrs = 0;
 	int error = 0;
 	int file_err = 0;
+	FILE * number; 
 	char * file = NULL;
-	int size;
+	int size = 0;
 	char * f;
 	int first_menu = 0;
+	int * a;
 	do{
 	printf("1. Select file to process \n");
 	printf("2. Exit the program \n");
 	printf("Enter a choice 1 or 2: \n");
 	scanf("%d", &first_menu);
-	if(first_menu == 1){
-	
+	if(first_menu == 2){
+		exit(1);
+		
+	}
 	do{
-	file_err = 0;
 	error = 0;
 	printf("Which file you want to process? \n");
 	printf("Enter 1 to pick the largest file \n");
@@ -371,44 +377,66 @@ int getInput(){
 	printf("Enter 3 to specify the name of a file \n");
 	printf("Enter a choice from 1 to 3: \n");
 	scanf("%d", &n);
+
 	
 	if(n == 1){
 	get_largest(&file);
+
 	head = getMovies(file, &size, &file_err);
+	printf("Now processing the chosen file named %s", file);
+
 	free(file);
-	n_yrs = get_num_years(head, size);
-	//mk_directory(n_yrs);
+	 a = get_num_years(head, size, &n_yrs);
+	mk_directory(n_yrs, a);
+		size = 0;
+	n_yrs = 0; 
 
 	//head = NULL;
 	}
 	else if(n == 2){
 	get_smallest(&file);
 	head = getMovies(file, &size, &file_err);
+	printf("Now processing the chosen file named %s", file);
 	free(file);
-	//n_yrs = get_num_years(head, size);
-	//mk_directory(n_yrs);
+	 a = get_num_years(head, size,&n_yrs);
+	mk_directory(n_yrs, a);
+	n_yrs = 0;
+		size = 0;
 
+ 
 		
 	}
 	else if(n == 3){
-	 printf("what is the name of the file? \n");
-	scanf("%s", &file);
+	
+	int found = 0;
+	  printf("what is the name of the file? \n");
+	
+	scanf("%s", &f);
+	
+	int fd = open(&f, O_RDWR);
+	printf("fd is: %d", fd);
+	if(fd < 0){
+		printf("No such file \n");
+		file_err = 1;
+		close(fd);
+
+		
+	}
+	else{
+		file_err = 0;
+		close(fd);
+	printf("Now processing the chosen file named %s \n ", &f);
  
-	head = getMovies(&file, &size, &file_err);
-	//n_yrs = get_num_years(head, size);
-	//mk_directory(n_yrs);
-	} 
-	else{
-		printf("incorrect input");
-		error = 1;
+
+ 
+	head = getMovies(&f, &size, &file_err);
+	a = get_num_years(head, size, &n_yrs);
+	mk_directory(n_yrs, a);
+		n_yrs = 0;
+		size = 0;
 	}
-	}while(file_err == 1 || error == 1);
 	}
-	else{
-		exit(1);
-		
-	}
-		
+	}while(file_err == 1);
 	
 	}while(first_menu == 1);
 }
