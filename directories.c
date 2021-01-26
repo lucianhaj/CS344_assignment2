@@ -306,6 +306,8 @@ void mk_directory(int num_years, int * array){
 	char file_x[5] = ".txt";
 	char * file_s;
 	char * year;
+	char * t;
+
 	//char * r = (char *) malloc(sizeof(char) * (sizeof(random)/ sizeof(int)));
 	//r = itoa(random, r, 10); 
 	const char dir_name[19]= "hajl_movies.movies.";
@@ -323,7 +325,7 @@ void mk_directory(int num_years, int * array){
 	printf("string %s:", &file_s);
 	year = strcat(&file_s, ".txt");
 	printf("file_s %s", &file_s);
-	fd = open(year, O_RDWR | O_CREAT, 0640);
+	fd = open(year, O_RDWR | O_CREAT | O_APPEND, 0640);
 	if(fd < 0){
 		printf("error");
 	}
@@ -331,7 +333,7 @@ void mk_directory(int num_years, int * array){
 		while(head != NULL){
 			if(head->year == array[i]){
 			int written = write(fd, head->title, strlen(head->title));
-			
+			written = write(fd, "\n", sizeof(char));
 			}
 			head = head->next;
 			
@@ -360,12 +362,27 @@ int getInput(){
 	char * f;
 	int first_menu = 0;
 	int * a;
+	struct movie * first;
+	char ** lang;
 	do{
 	printf("1. Select file to process \n");
 	printf("2. Exit the program \n");
 	printf("Enter a choice 1 or 2: \n");
 	scanf("%d", &first_menu);
 	if(first_menu == 2){
+		free(a);
+		while(head !=NULL){
+		first = head;
+		free(head->title);
+		
+		
+		lang = head->languages;
+			free(lang);
+			
+		
+		free(first);
+		head = head->next;
+	}
 		exit(1);
 		
 	}
